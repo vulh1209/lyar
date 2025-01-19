@@ -1,0 +1,23 @@
+{
+    "manifest_version": 3,
+    "name": "Lyar Assistant",
+    "version": "1.0",
+    "description": "Your helpful AI assistant in Chrome",
+    "permissions": [
+        "activeTab",
+        "storage"
+    ],
+    "action": {
+        "default_popup": "popup.html",
+        "default_icon": {
+            "16": "icons/icon.png",
+            "48": "icons/icon.png",
+            "128": "icons/icon.png"
+        }
+    },
+    "icons": {
+        "16": "icons/icon.png",
+        "48": "icons/icon.png",
+        "128": "icons/icon.png"
+    }
+}

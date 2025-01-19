@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Lyar Assistant</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <div class="container">
+        <div id="main-view">
+            <div class="header">
+                <div class="header-buttons">
+                    <button id="new-chat" class="header-button">New Chat</button>
+                </div>
+                <h1>Lyar Assistant</h1>
+                <a id="settings-link" href="#" class="settings-icon">...</a>
+            </div>
+            <div class="chat-container">
+                <div id="chat-messages"></div>
+                <div class="input-container">
+                    <textarea id="user-input" placeholder="Type your message here..."></textarea>
+                    <button id="send-button">Send</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="settings-view" class="settings-container" style="display: none;">
+            <div class="header">
+                <a id="back-to-chat" href="#" class="back-icon">Back</a>
+                <h1>Settings</h1>
+            </div>
+            <div class="settings-content">
+                <div class="form-group">
+                    <label for="apiKey">API Key:</label>
+                    <div class="api-key-container">
+                        <input type="password" id="apiKey" placeholder="Enter your API key">
+                        <button id="copyApiKey" class="icon-button" title="Copy API Key">Copy</button>
+                        <button id="toggleApiKey" class="icon-button" title="Show/Hide API Key">Show</button>
+                    </div>
+                    <label for="customPrompt">Custom System Prompt:</label>
+                    <textarea id="customPrompt" placeholder="Enter custom instructions for the AI assistant"
+                        rows="4"></textarea>
+                    <button id="saveButton">Save Settings</button>
+                </div>
+                <div id="statusMessage" class="status-message" style="display: none;"></div>
+            </div>
+        </div>
+    </div>
+    <script src="popup.js"></script>
+</body>
+
+</html>
