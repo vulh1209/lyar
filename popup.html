@@ -4,6 +4,8 @@
 <head>
     <title>Lyar Assistant</title>
     <link rel="stylesheet" href="styles.css">
+    <script src="chains.js"></script>
+    <script src="ethers.js"></script>
 </head>
 
 <body>
@@ -41,6 +43,36 @@
                     <label for="customPrompt">Custom System Prompt:</label>
                     <textarea id="customPrompt" placeholder="Enter custom instructions for the AI assistant"
                         rows="4"></textarea>
+
+                    <div class="wallet-section">
+                        <label>Ethereum Wallet:</label>
+                        <div class="wallet-info" id="walletInfo">
+                            <p>No wallet connected</p>
+                        </div>
+                        <div class="chain-selector">
+                            <select id="chainSelect" class="chain-select">
+                                <!-- Will be populated by JavaScript -->
+                            </select>
+                            <div class="balance-info">
+                                Balance: <span id="walletBalance">0.00</span> <span id="tokenSymbol">ETH</span>
+                                <button id="refreshBalance" class="icon-button" title="Refresh Balance">🔄</button>
+                            </div>
+                        </div>
+                        <div class="wallet-buttons">
+                            <button id="createWallet" class="wallet-button">Create New Wallet</button>
+                            <button id="importWallet" class="wallet-button">Import Wallet</button>
+                        </div>
+                        <div id="importSection" style="display: none;">
+                            <input type="password" id="privateKey" placeholder="Enter private key">
+                            <button id="confirmImport" class="wallet-button">Confirm Import</button>
+                        </div>
+                        <div id="exportSection" style="display: none;">
+                            <input type="password" id="exportKey" readonly>
+                            <button id="copyPrivateKey" class="wallet-button">Copy Private Key</button>
+                            <button id="removeWallet" class="wallet-button danger">Remove Wallet</button>
+                        </div>
+                    </div>
+
                     <button id="saveButton">Save Settings</button>
                 </div>
                 <div id="statusMessage" class="status-message" style="display: none;"></div>

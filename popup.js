@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
   const chatMessages = document.getElementById('chat-messages');
   const userInput = document.getElementById('user-input');
   const sendButton = document.getElementById('send-button');
@@ -14,6 +14,217 @@ document.addEventListener('DOMContentLoaded', () => {
   const copyApiKeyButton = document.getElementById('copyApiKey');
   const toggleApiKeyButton = document.getElementById('toggleApiKey');
 
+  // Wallet elements
+  const walletInfo = document.getElementById('walletInfo');
+  const createWalletButton = document.getElementById('createWallet');
+  const importWalletButton = document.getElementById('importWallet');
+  const importSection = document.getElementById('importSection');
+  const exportSection = document.getElementById('exportSection');
+  const privateKeyInput = document.getElementById('privateKey');
+  const confirmImportButton = document.getElementById('confirmImport');
+  const exportKeyInput = document.getElementById('exportKey');
+  const copyPrivateKeyButton = document.getElementById('copyPrivateKey');
+  const removeWalletButton = document.getElementById('removeWallet');
+
+  // Chain elements
+  const chainSelect = document.getElementById('chainSelect');
+  const walletBalance = document.getElementById('walletBalance');
+  const tokenSymbol = document.getElementById('tokenSymbol');
+  const refreshBalance = document.getElementById('refreshBalance');
+
+  // Wallet functionality
+  let wallet = null;
+  const walletButtons = document.querySelector('.wallet-buttons');
+
+  function showWalletActions(hasWallet) {
+    if (hasWallet) {
+      // Hide create/import buttons when wallet exists
+      walletButtons.style.display = 'none';
+      importSection.style.display = 'none';
+    } else {
+      // Show create/import buttons when no wallet
+      walletButtons.style.display = 'flex';
+    }
+  }
+
+  // Initialize chain selector
+  function initializeChainSelector() {
+    // Clear existing options
+    chainSelect.innerHTML = '';
+    
+    // Add chains from config
+    Object.entries(CHAINS).forEach(([chainId, chain]) => {
+      const option = document.createElement('option');
+      option.value = chainId;
+      option.textContent = `${chain.icon} ${chain.name}`;
+      chainSelect.appendChild(option);
+    });
+
+    // Load saved chain
+    chrome.storage.local.get(['selectedChainId'], (result) => {
+      if (result.selectedChainId) {
+        chainSelect.value = result.selectedChainId;
+      } else {
+        // Default to Ethereum Mainnet
+        chainSelect.value = '1';
+        chrome.storage.local.set({ selectedChainId: '1' });
+      }
+      updateTokenSymbol();
+    });
+  }
+
+  // Update token symbol based on selected chain
+  function updateTokenSymbol() {
+    const chainId = chainSelect.value;
+    const chain = CHAINS[chainId];
+    if (chain) {
+      tokenSymbol.textContent = chain.symbol;
+    }
+  }
+
+  // Get provider for current chain
+  function getProvider() {
+    const chainId = chainSelect.value;
+    const chain = CHAINS[chainId];
+    if (!chain) return null;
+    return new ethers.JsonRpcProvider(chain.rpc);
+  }
+
+  // Update wallet balance
+  async function updateBalance() {
+    try {
+      if (!wallet) return;
+
+      const provider = getProvider();
+      if (!provider) return;
+
+      const balance = await provider.getBalance(wallet.address);
+      const formattedBalance = ethers.formatEther(balance);
+      walletBalance.textContent = (+formattedBalance).toFixed(4);
+    } catch (error) {
+      console.error('Balance update error:', error);
+      walletBalance.textContent = '0.00';
+    }
+  }
+
+  // Chain change handler
+  chainSelect.addEventListener('change', async () => {
+    const chainId = chainSelect.value;
+    chrome.storage.local.set({ selectedChainId: chainId });
+    updateTokenSymbol();
+    await updateBalance();
+  });
+
+  // Refresh balance handler
+  refreshBalance.addEventListener('click', updateBalance);
+
+  // Update wallet info with balance
+  async function updateWalletInfo(address) {
+    walletInfo.innerHTML = `
+      <p><strong>Address:</strong></p>
+      <p>${address}</p>
+    `;
+    await updateBalance();
+  }
+
+  // Initialize chain selector
+  initializeChainSelector();
+
+  // Load wallet if exists
+  chrome.storage.local.get(['walletAddress', 'encryptedPrivateKey'], async (result) => {
+    if (result.walletAddress) {
+      wallet = new ethers.Wallet(result.encryptedPrivateKey);
+      await updateWalletInfo(result.walletAddress);
+      showWalletActions(true);
+    } else {
+      showWalletActions(false);
+    }
+  });
+
+  // Create new wallet
+  createWalletButton.addEventListener('click', async () => {
+    try {
+      const randomWallet = ethers.Wallet.createRandom();
+      wallet = randomWallet;
+      const address = await wallet.getAddress();
+
+      chrome.storage.local.set({
+        walletAddress: address,
+        encryptedPrivateKey: wallet.privateKey
+      });
+
+      await updateWalletInfo(address);
+      showStatus('Wallet created successfully!', 'success');
+      showWalletActions(true);
+
+      exportKeyInput.value = wallet.privateKey;
+      exportSection.style.display = 'block';
+    } catch (error) {
+      console.error('Wallet creation error:', error);
+      showStatus('Error creating wallet: ' + error.message, 'error');
+    }
+  });
+
+  // Import wallet
+  importWalletButton.addEventListener('click', () => {
+    importSection.style.display = importSection.style.display === 'none' ? 'block' : 'none';
+    exportSection.style.display = 'none';
+  });
+
+  // Confirm import
+  confirmImportButton.addEventListener('click', async () => {
+    try {
+      const privateKey = privateKeyInput.value.trim();
+      if (!privateKey) {
+        throw new Error('Please enter a private key');
+      }
+
+      wallet = new ethers.Wallet(privateKey);
+      const address = await wallet.getAddress();
+
+      chrome.storage.local.set({
+        walletAddress: address,
+        encryptedPrivateKey: privateKey
+      });
+
+      await updateWalletInfo(address);
+      showStatus('Wallet imported successfully!', 'success');
+      showWalletActions(true);
+      importSection.style.display = 'none';
+      privateKeyInput.value = '';
+    } catch (error) {
+      console.error('Wallet import error:', error);
+      showStatus('Error importing wallet: ' + error.message, 'error');
+    }
+  });
+
+  // Copy private key
+  copyPrivateKeyButton.addEventListener('click', async () => {
+    try {
+      await navigator.clipboard.writeText(exportKeyInput.value);
+      showStatus('Private key copied to clipboard!', 'success');
+    } catch (error) {
+      showStatus('Error copying private key', 'error');
+    }
+  });
+
+  // Remove wallet
+  removeWalletButton.addEventListener('click', async () => {
+    try {
+      chrome.storage.local.remove(['walletAddress', 'encryptedPrivateKey'], () => {
+        wallet = null;
+        walletBalance.textContent = '0.00';
+        updateWalletInfo('No wallet connected');
+        showWalletActions(false);
+        exportSection.style.display = 'none';
+        showStatus('Wallet removed successfully!', 'success');
+      });
+    } catch (error) {
+      console.error('Wallet removal error:', error);
+      showStatus('Error removing wallet: ' + error.message, 'error');
+    }
+  });
+
   // Default system prompt
   const DEFAULT_SYSTEM_PROMPT = `
 You are a assistant. Your name is Lyar.
@@ -25,12 +236,10 @@ Your personality traits:
 - Always try to help users solve their problems in the best way possible
 
 Web3 Integration:
-When user requests any action to blockchain/web3, you should:
-1.You can clarify the format if user request action with web3. 
-If you don't know it is nft or token you can ask user to clarify. type nft is erc721 or erc1155.
-2. Use the appropriate smart contract ABI
-3. Encode the function call data
-4. Reply with the following format if you enough information, if not you can ask user to clarify:
+When user requests any blockchain/web3 action, you should:
+1. Use the appropriate smart contract ABI
+2. Encode the function call data
+3. Reply with the following format:
 {{action: 'web3',
   method: 'function_name',
   params: ['param1', 'param2'],
