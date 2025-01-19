@@ -40,6 +40,17 @@ The extension is built with:
 - Gemini API
 - Web3.js/MetaMask
 
+## Author
+
+- **vu.le**
+- GitHub: [@vulh1209](https://github.com/vulh1209)
+
+## Support Development
+
+If you find this extension helpful, you can support its development by donating:
+
+- ETH Address: `0xEa8FF026057793d990F6B92b17212739868a0D85`
+
 ## License
 
 MIT License 
