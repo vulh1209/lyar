@@ -5,7 +5,8 @@
     "description": "Your helpful AI assistant in Chrome",
     "permissions": [
         "activeTab",
-        "storage"
+        "storage",
+        "identity"
     ],
     "content_security_policy": {
         "extension_pages": "script-src 'self'; object-src 'self'"
@@ -32,5 +33,12 @@
                 "<all_urls>"
             ]
         }
-    ]
+    ],
+    "oauth2": {
+        "client_id": "608616307788-3su5qjdt7ocoeqs0ljr0lv6pt1frdtfj.apps.googleusercontent.com",
+        "scopes": [
+            "https://www.googleapis.com/auth/userinfo.email",
+            "https://www.googleapis.com/auth/userinfo.profile"
+        ]
+    }
 }

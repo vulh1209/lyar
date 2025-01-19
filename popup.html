@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html data-theme="light">
 
 <head>
     <title>Lyar Assistant</title>
@@ -16,7 +16,9 @@
                     <button id="new-chat" class="header-button">New Chat</button>
                 </div>
                 <h1>Lyar Assistant</h1>
-                <a id="settings-link" href="#" class="settings-icon">...</a>
+                <div class="header-right">
+                    <a id="settings-link" href="#" class="settings-icon">Settings</a>
+                </div>
             </div>
             <div class="chat-container">
                 <div id="chat-messages"></div>
@@ -34,6 +36,17 @@
             </div>
             <div class="settings-content">
                 <div class="form-group">
+                    <div class="theme-section">
+                        <label>Theme:</label>
+                        <div class="theme-toggle-wrapper">
+                            <span class="theme-icon">Light</span>
+                            <label class="switch">
+                                <input type="checkbox" id="settings-theme-toggle">
+                                <span class="slider round"></span>
+                            </label>
+                            <span class="theme-icon">Dark</span>
+                        </div>
+                    </div>
                     <label for="apiKey">API Key:</label>
                     <div class="api-key-container">
                         <input type="password" id="apiKey" placeholder="Enter your API key">
@@ -43,6 +56,20 @@
                     <label for="customPrompt">Custom System Prompt:</label>
                     <textarea id="customPrompt" placeholder="Enter custom instructions for the AI assistant"
                         rows="4"></textarea>
+
+                    <div class="auth-section">
+                        <label>Account:</label>
+                        <div id="userInfo" class="user-info">
+                            <p>Not signed in</p>
+                        </div>
+                        <button id="googleSignIn" class="auth-button">
+                            <img src="google-icon.png" alt="Google" class="auth-icon">
+                            Sign in with Google
+                        </button>
+                        <button id="googleSignOut" class="auth-button" style="display: none;">
+                            Sign Out
+                        </button>
+                    </div>
 
                     <div class="wallet-section">
                         <label>Ethereum Wallet:</label>
@@ -55,7 +82,7 @@
                             </select>
                             <div class="balance-info">
                                 Balance: <span id="walletBalance">0.00</span> <span id="tokenSymbol">ETH</span>
-                                <button id="refreshBalance" class="icon-button" title="Refresh Balance">🔄</button>
+                                <button id="refreshBalance" class="icon-button" title="Refresh Balance">Refresh</button>
                             </div>
                         </div>
                         <div class="wallet-buttons">
@@ -71,6 +98,15 @@
                             <button id="copyPrivateKey" class="wallet-button">Copy Private Key</button>
                             <button id="removeWallet" class="wallet-button danger">Remove Wallet</button>
                         </div>
+                    </div>
+
+                    <div class="passkey-section">
+                        <label>Backup & Security:</label>
+                        <div class="passkey-info" id="passkeyInfo">
+                            <p>Secure your wallet with a passkey</p>
+                        </div>
+                        <button id="createPasskey" class="wallet-button">Create Passkey</button>
+                        <button id="recoverWithPasskey" class="wallet-button">Recover Wallet</button>
                     </div>
 
                     <button id="saveButton">Save Settings</button>
