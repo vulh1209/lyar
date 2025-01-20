@@ -154,22 +154,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
-  // Add refresh balance button
-  function addRefreshButton() {
-    const balanceInfo = document.querySelector('.balance-info');
-    if (balanceInfo) {
-      const refreshBalance = document.createElement('button');
-      refreshBalance.id = 'refreshBalance';
-      refreshBalance.title = 'Refresh Balance';
-      refreshBalance.textContent = '⟳';
-      balanceInfo.appendChild(refreshBalance);
-      refreshBalance.addEventListener('click', updateBalance);
-    }
-  }
-
-  // Call after DOM is loaded
-  addRefreshButton();
-
   // Update wallet info with balance
   async function updateWalletInfo(address) {
     // Check login status
@@ -292,23 +276,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   });
 
-  // Remove wallet
-  removeWalletButton.addEventListener('click', async () => {
-    try {
-      chrome.storage.local.remove(['walletAddress', 'encryptedPrivateKey'], () => {
-        wallet = null;
-        walletBalance.textContent = '0.00';
-        updateWalletInfo('No wallet connected');
-        showWalletActions(false);
-        exportSection.style.display = 'none';
-        showStatus('Wallet removed successfully!', 'success');
-      });
-    } catch (error) {
-      console.error('Wallet removal error:', error);
-      showStatus('Error removing wallet: ' + error.message, 'error');
-    }
-  });
-
   // Default system prompt
   const DEFAULT_SYSTEM_PROMPT = `
 You are a assistant. Your name is Lyar.
@@ -318,19 +285,6 @@ Your personality traits:
 - Clever and intelligent
 - Very friendly and approachable
 - Always try to help users solve their problems in the best way possible
-
-Web3 Integration:
-When user requests any blockchain/web3 action, you should:
-1. Use the appropriate smart contract ABI
-2. Encode the function call data
-3. Reply with the following format:
-{{action: 'web3',
-  method: 'function_name',
-  params: ['param1', 'param2'],
-  data: 'encoded_function_data',
-  value: 'eth_value_in_wei',
-  to: 'contract_address'
-}}
 `.trim();
 
   // Merge default and custom prompts
@@ -343,56 +297,6 @@ ${DEFAULT_SYSTEM_PROMPT}
 Custom Instructions:
 ${customPrompt}
 `.trim();
-  }
-
-  // Handle web3 action
-  async function handleWeb3Action(actionData) {
-    try {
-      // Check if MetaMask is installed
-      if (typeof window.ethereum === 'undefined') {
-        throw new Error('MetaMask is not installed');
-      }
-
-      // Request account access
-      const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-      const from = accounts[0];
-
-      // Parse action data
-      const match = actionData.match(/{{action: 'web3'.*?}}/s);
-      if (!match) return null;
-
-      try {
-        // Convert the matched string to a valid JSON format
-        const jsonStr = match[0]
-          .replace(/{{/g, '{')
-          .replace(/}}/g, '}')
-          .replace(/'/g, '"');
-        
-        const action = JSON.parse(jsonStr);
-
-        // Prepare transaction parameters
-        const txParams = {
-          from,
-          to: action.to,
-          value: action.value ? action.value : '0x0',
-          data: action.data ? action.data : '0x'
-        };
-
-        // Send transaction
-        const txHash = await window.ethereum.request({
-          method: 'eth_sendTransaction',
-          params: [txParams],
-        });
-
-        return `Transaction sent! Hash: ${txHash}`;
-      } catch (e) {
-        console.error('Error parsing action:', e);
-        throw new Error('Invalid web3 action format');
-      }
-    } catch (error) {
-      console.error('Web3 error:', error);
-      throw error;
-    }
   }
 
   // Handle API key visibility toggle
